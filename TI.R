@@ -84,28 +84,41 @@ TIserver <- function(input, output, session) {
     # Initialize reactive values
     rv <- reactiveValues()
 
+    rv$lastButtonPressed <- NULL
+
     # Render method-specific UI
     output$method_specific_ui <- renderUI({
         req(input$TI_method)  # Ensure TI_method is selected
 
         if (input$TI_method == "slingshot") {
             tagList(
+                # Input for the start cluster ID
                 textInput(ns("start_cluster"), "Start Cluster", value = "0"),
+                # Input for the end cluster ID
                 textInput(ns("end_cluster"), "End Cluster", value = ""),
+                # Input for the cluster label (used in the Seurat object)
                 textInput(ns("cluster_label"), "Cluster Label", value = ""),
+                # Input for specifying a column name in metadata for coloring cells
                 textInput(ns("color_cells"), "Color By", value = "")
             )
         } else if (input$TI_method == "Monocle3") {
             tagList(
+                # Input for the start cluster ID
                 textInput(ns("start_cluster"), "Start Cluster", value = "0"),
+                # Input for the cluster label (used in the Seurat object)
                 textInput(ns("cluster_label"), "Cluster Label", value = ""),
+                # Input for specifying a column name in metadata for coloring cells
                 textInput(ns("color_cells"), "Color By", value = ""),
+                # Input for grouping cells in Monocle3 analysis
                 textInput(ns("group_input"), "Group By", value = ""),
+                # Checkbox to indicate if leaves should be labeled on the trajectory plot
                 checkboxInput(ns("label_leaves_input"), "Label leaves:", value = FALSE),
+                # Checkbox to indicate if branch points should be labeled on the trajectory plot
                 checkboxInput(ns("label_branch_points_input"), "Label branch points:", value = TRUE)
             )
         }
     })
+
 
     observeEvent(input$runproprecessingdata, {
         req(input$TI_method)  # Ensure TI_method is selected
@@ -165,6 +178,7 @@ TIserver <- function(input, output, session) {
         # Reset output variables
         rv$trajectoryPlot <- NULL
         rv$output_data <- NULL
+        rv$results <- NULL
 
         if (input$TI_method == "slingshot") {
             print("Starting Slingshot trajectory analysis...")
@@ -281,20 +295,49 @@ TIserver <- function(input, output, session) {
         print("Trajectory Analysis completed")
     })
 
-
     observeEvent(input$runDEG, {
-        req(rv$output_data)
-        req(rv$results)
+        req(input$TI_method)
+
+        # Reset output variables
+        rv$DEG <- NULL
+
+        print(paste("TI_method selected:", input$TI_method))
+
         if (input$TI_method == "slingshot") {
             print("DEG analysis started for Slingshot.")
+            req(rv$output_data)
+            req(input$seurat_object_file)
 
+            # Initialize and check file extension
+            inFile <- input$seurat_object_file
+            ext <- tools::file_ext(inFile$datapath)
+
+            # Validate the file type and read the file accordingly
+            seurat_object <- tryCatch({
+                if (ext == "rds") {
+                    readRDS(inFile$datapath)  # Read RDS file
+                } else {
+                    stop("Invalid file type. Please upload an RDS file.")
+                }
+            }, error = function(e) {
+                print(paste("Error reading file:", e$message))
+                showNotification(paste("Error reading file:", e$message), type = "error")
+                return(NULL)
+            })
+
+            # Check if the loaded object is a Seurat object
+            if (!inherits(seurat_object, "Seurat")) {
+                print("The uploaded RDS file does not contain a Seurat object.")
+                showNotification("The uploaded RDS file does not contain a Seurat object.", type = "error")
+                return(NULL)
+            }
+
+            # Perform DEG analysis
             rv$DEG <- tryCatch({
-                # Assume Tcells data is read from a file; adjust file reading as needed
-                Tcells <- read.csv(input$seurat_object_file$datapath)
                 runDEGtrajectory_S(
                     output_slingshot = rv$output_data,
-                    Tcells = Tcells,
-                    q = input$q_value_threshold,  # Ensure this input is numeric
+                    Tcells = seurat_object,  # Pass the Seurat object
+                    q = input$q_value_threshold,
                     session = session
                 )
             }, error = function(e) {
@@ -303,21 +346,39 @@ TIserver <- function(input, output, session) {
                 return(NULL)
             })
 
+            # Set up download handler if DEG analysis is successful
             if (!is.null(rv$DEG)) {
-                rv$trajectoryPlot1 <- rv$DEG[[2]]  # Store the first plot from DEG results
+                output$downloadDEG <- downloadHandler(
+                    filename = function() {
+                        paste("DEG_results_", Sys.Date(), ".zip", sep = "")
+                    },
+                    content = function(file) {
+                        tempDir <- tempdir()  # Get the path to the temp directory
 
-                # Debug print to check the plot object
-                print(class(rv$trajectoryPlot1))  # Should be of class "pheatmap"
+                        # Create temporary files
+                        deg_csv <- file.path(tempDir, "DEG_table.csv")
+                        plot_png1 <- file.path(tempDir, "TrajectoryPlot1.png")
 
-                # Render the pheatmap plot directly
-                output$trajectoryPlot <- renderPlot({
-                    req(rv$trajectoryPlot1)  # Ensure plot is available
-                    print("Rendering pheatmap plot")  # Debug message
-                    rv$trajectoryPlot1
-                })
+
+                        # Save files to tempDir
+                        if (!is.null(rv$DEG[[1]])) {
+                            write.csv(rv$DEG[[1]], deg_csv)
+                        }
+
+                        if (!is.null(rv$DEG[[2]])) {
+                            ggsave(plot_png1, plot = rv$DEG[[2]])
+                        }
+
+                        # Zip files
+                        zip::zip(zipfile = file, files = c(deg_csv, plot_png1))
+                    },
+                    contentType = "application/zip"
+                )
             }
+
         } else if (input$TI_method == "Monocle3") {
             print("DEG analysis started for Monocle3.")
+            req(rv$results)
 
             rv$DEG <- tryCatch({
                 runDEGtrajectory_M(
@@ -329,41 +390,53 @@ TIserver <- function(input, output, session) {
                     session = session
                 )
             }, error = function(e) {
-                print(paste("Error during DEG analysis:", e))
-                showNotification("Error during DEG analysis: " + e$message, type = "error")
+                print(paste("Error during DEG analysis:", e$message))
+                showNotification(paste("Error during DEG analysis:", e$message), type = "error")
                 return(NULL)
             })
 
+            # Set up download handler if DEG analysis is successful
             if (!is.null(rv$DEG)) {
-                rv$trajectoryPlot1 <- rv$DEG[[2]]  # Store the first plot from DEG results
-                rv$trajectoryPlot2 <- rv$DEG[[3]]  # Store the second plot from DEG results
-                rv$currentPlotIndex <- 1           # Initialize the plot index to 1
-
-                output$trajectoryPlot <- renderPlot({
-                    req(rv$DEG)  # Ensure DEG results are available
-                    print(paste("Rendering plot index:", rv$currentPlotIndex))  # Debug message
-                    if (rv$currentPlotIndex == 1) {
-                        rv$trajectoryPlot1
-                    } else {
-                        rv$trajectoryPlot2
-                    }
-                })
-
                 output$downloadDEG <- downloadHandler(
                     filename = function() {
-                        "DEG_results.csv"
+                        paste("DEG_results_", Sys.Date(), ".zip", sep = "")
                     },
                     content = function(file) {
-                        if (!is.null(rv$DEG[[4]]) && file.exists(rv$DEG[[4]])) {
-                            file.copy(rv$DEG[[4]], file)
-                        } else {
-                            showNotification("The DEG results file is not available.", type = "error")
+                        tempDir <- tempdir()  # Get the path to the temp directory
+
+                        # Create temporary files
+                        deg_csv <- file.path(tempDir, "DEG_table.csv")
+                        plot_png1 <- file.path(tempDir, "TrajectoryPlot1.png")
+                        plot_png2 <- file.path(tempDir, "TrajectoryPlot2.png")
+
+                        # Save files to tempDir
+                        if (!is.null(rv$DEG[[1]])) {
+                            write.csv(rv$DEG[[1]], deg_csv)
                         }
-                    }
+
+                        if (!is.null(rv$DEG[[2]])) {
+                            ggsave(plot_png1, plot = rv$DEG[[2]])
+                        }
+
+                        if (!is.null(rv$DEG[[3]])) {
+                            ggsave(plot_png2, plot = rv$DEG[[3]])
+                        }
+
+                        # Zip files
+                        zip::zip(zipfile = file, files = c(deg_csv, plot_png1, plot_png2))
+                    },
+                    contentType = "application/zip"
                 )
             }
         }
+
+        # If DEG analysis fails, clear the download handler
+        if (is.null(rv$DEG)) {
+            output$downloadDEG <- downloadHandler(NULL, NULL)
+        }
     })
+
+
 
     observeEvent(input$nextPlot, {
         if (!is.null(rv$DEG)) {
@@ -631,39 +704,22 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
         milestone_network <- output_slingshot$milestone_network
         progressions <- output_slingshot$progressions
 
-        # Check if Tcells is a data frame or SingleCellExperiment object
-        if (is(Tcells, "SingleCellExperiment")) {
-            # Extract raw counts from SingleCellExperiment
-            counts_matrix <- assays(Tcells)$counts
-        } else if (is.data.frame(Tcells)) {
-            # Convert data frame to matrix if it's not a SingleCellExperiment
-            counts_matrix <- as.matrix(Tcells)
-        } else {
-            stop("Tcells must be a SingleCellExperiment object or a data frame.")
-        }
+        # Extract raw counts
+        counts_matrix <- LayerData(Tcells, assay = "RNA", layer = "counts")
 
-        # Ensure counts_matrix is a Matrix object
+
+        # Convert counts_matrix to Matrix if needed
         counts_matrix <- as(counts_matrix, "Matrix")
+
+        print("DATA prprocessed")
 
         # Ensure column names match cell IDs
         cell_ids <- colnames(counts_matrix)
 
-        # Check if pseudotime is available in Tcells if it is a data frame
-        if (is.data.frame(Tcells) && "pseudotime" %in% colnames(Tcells)) {
-            pseudotime <- Tcells$pseudotime
-            names(pseudotime) <- rownames(Tcells)
-        } else if (is(Tcells, "SingleCellExperiment")) {
-            pseudotime <- colData(Tcells)$pseudotime
-        } else {
-            stop("Pseudotime information is missing or not correctly formatted.")
-        }
-
         # Ensure pseudotime is named correctly
         cell_ids_pseudotime <- names(pseudotime)
         common_cell_ids <- intersect(cell_ids, cell_ids_pseudotime)
-        if (length(common_cell_ids) == 0) {
-            stop("No common cell IDs between counts matrix and pseudotime data.")
-        }
+
 
         # Subset pseudotime to match cell IDs in counts matrix
         pseudotime_aligned <- pseudotime[cell_ids]
@@ -676,6 +732,7 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
         expression_long$pseudotime <- pseudotime_aligned[expression_long$cell_id]
 
         # Fit a GAM model for each gene and extract smooth terms
+        print("Calculation started")
         results <- expression_long %>%
             group_by(gene) %>%
             do({
@@ -698,6 +755,7 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
         results <- results %>%
             mutate(q_value = p.adjust(p.value, method = "BH"))
 
+        print("filtering.....")
         # Filter genes with q-value <= q_value_threshold
         significant_genes <- results %>%
             filter(q_value < q) %>%
@@ -743,6 +801,7 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
         pseudotime_colors <- colorRampPalette(c("yellow", "white", "green"))(100)
         pseudotime_color_map <- setNames(pseudotime_colors, pseudotime_breaks)
 
+        print("Drawing heatmap.....")
         # Create the heatmap
         heatmap <- pheatmap(
             as.matrix(heatmap_data),
@@ -757,6 +816,7 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
             show_rownames = FALSE,
             show_colnames = FALSE
         )
+        print("DEG analysis completed.")
 
         result <- list(results = results, heatmap = heatmap, smooth_terms = smooth_terms, heatmap_data = heatmap_data)
 
@@ -766,7 +826,6 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
         return(NULL)
     })
 }
-
 
 
 get_earliest_principal_node <- function(cds, seurat_cluster, start_cluster){
