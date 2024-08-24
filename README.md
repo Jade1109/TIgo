@@ -69,19 +69,55 @@ Output: Trajctory Inference Plot
 
 ![TIgo Trajectory Inference (Slingshot)](/figures/TIS.png)
 
-### Differential expression
+### Differential Expression Analysis
+
+Input file: Output data from tranjectort inference
+
+Output: file containing differential expression genes, heatmap, scatterplot (Monocle3 only)
+
+#### Monocle3
+1. DE analysis
+2. Filtration of significantly differential expressed genes
+3. Creation of module
+4. Aggregate gene expression data
+5. Visulization
+
+![TIgo Differential Expression Analysis (Monocle3)](/figures/DEM.png)
+
+#### Slingshot
+
+1. Fit GAM model for each gene and extract smooth terms
+2. Identification of Significant Genes 
+3. Visualization
+
+![TIgo Differential Expression Analysis (Slingshot)](/figures/DES.png)
+
+### GO Enrichment
+
+Input files: .csv file
+Output: barplot and file of GO enrichment
+
+![TIgo GO Enrichment](/figures/GO.png)
+
+## Test Data
+GSE145926, which includes human bronchoalveolar lavage fluid (BALF) cells, was utilized to test the application of this package in COVID-19 studies. This dataset includes samples from 3 healthy controls, 3 patients with moderate COVID-19, and 6 patients with severe COVID-19 (Liao et al., 2020b).
+
+
+## Built With
+
+* [shiny](https://shiny.rstudio.com/)
+* [RStudio](https://www.rstudio.com/)
+
+
+## Reference
+LIAO, M., LIU, Y., YUAN, J., WEN, Y., XU, G., ZHAO, J., CHENG, L., LI, J., WANG, X., WANG, F., LIU, L., AMIT, I., ZHANG, S. & ZHANG, Z. 2020b. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med, 26, 842-844.
 
 
 
 
 
 
-#### Input 
 
-TIgo accept input file for each stage:
-Object creation: .h5 file 
-Tracjectory Inference: .rds file
-Differenctial Experince: .csv file
 
 
 
