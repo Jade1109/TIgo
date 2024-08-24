@@ -1,4 +1,4 @@
-![image](https://github.com/user-attachments/assets/31926280-42f3-4857-ba52-0eb07dc047a9)![image](https://github.com/user-attachments/assets/a795f9d0-10db-436b-b5a2-f87a1dcfc0e4)![image](https://github.com/user-attachments/assets/f04a7b1d-ed29-4050-88fa-9714737e48ab)![image](https://github.com/user-attachments/assets/7574a9a0-9e86-484a-bd01-d6c1a89250cb)![image](https://github.com/user-attachments/assets/5fafb0e5-52d3-4376-a85a-a0f71b6b992a)# TIgo
+# TIgo
 TIgo - A user-friendly R package for Single-cell RNA-Seq data trajectory inference analysis.
 
 ### Installation
