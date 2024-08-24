@@ -1,4 +1,4 @@
-# TIgo
+![image](https://github.com/user-attachments/assets/31926280-42f3-4857-ba52-0eb07dc047a9)![image](https://github.com/user-attachments/assets/a795f9d0-10db-436b-b5a2-f87a1dcfc0e4)![image](https://github.com/user-attachments/assets/f04a7b1d-ed29-4050-88fa-9714737e48ab)![image](https://github.com/user-attachments/assets/7574a9a0-9e86-484a-bd01-d6c1a89250cb)![image](https://github.com/user-attachments/assets/5fafb0e5-52d3-4376-a85a-a0f71b6b992a)# TIgo
 TIgo - A user-friendly R package for Single-cell RNA-Seq data trajectory inference analysis.
 
 ### Installation
@@ -18,7 +18,8 @@ startTIgo()
 TIgo requires R>= 4.4.0
 
 ## About
-TIgo provides a comprehesnive pipline of scRNA-seq analysis, espacially for trajctory inference. 
+TIgo provides a comprehensive pipeline from scratch, compares and combines Monocle3 and Slingshot, and supplies the Trajectory information on the key interferon-stimulated gene and immune cell markers for SARS2 infection (Saelens et al., 2019, Street et al., 2018)
+
 ![TIgo workflow](/figures/workflow.png)
 
 ### Object Creation and Clustering
@@ -82,7 +83,8 @@ Output: file containing differential expression genes, heatmap, scatterplot (Mon
 4. Aggregate gene expression data
 5. Visulization
 
-![TIgo Differential Expression Analysis (Monocle3)](/figures/DEM.png)
+![TIgo Differential Expression Analysis (Monocle3) a. 10 ISGs expression along with pseudotime. b. heatmap of differential expression.
+](/figures/DEM.png)
 
 #### Slingshot
 
@@ -110,6 +112,8 @@ GSE145926, which includes human bronchoalveolar lavage fluid (BALF) cells, was u
 
 
 ## Reference
+SAELENS, W., CANNOODT, R., TODOROV, H. & SAEYS, Y. 2019. A comparison of single-cell trajectory inference methods. Nature biotechnology, 37, 547-554.
+STREET, K., RISSO, D., FLETCHER, R. B., DAS, D., NGAI, J., YOSEF, N., PURDOM, E. & DUDOIT, S. 2018. Slingshot: cell lineage and pseudotime inference for single-cell transcriptomics. BMC genomics, 19, 1-16.
 LIAO, M., LIU, Y., YUAN, J., WEN, Y., XU, G., ZHAO, J., CHENG, L., LI, J., WANG, X., WANG, F., LIU, L., AMIT, I., ZHANG, S. & ZHANG, Z. 2020b. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med, 26, 842-844.
 
 
