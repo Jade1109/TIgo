@@ -16,3 +16,21 @@ startTIgo()
 ### Prerequisites
 
 TIgo requires R>= 4.4.0
+
+## About
+TIgo provides a comprehesnive pipline of scRNA-seq analysis, espacially for trajctory inference. 
+![TIgo workflow](/)
+
+### Object Creation
+
+#### Input 
+
+TIgo accept input file for each stage:
+Object creation: .h5 file 
+Tracjectory Inference: .rds file
+Differenctial Experince: .csv file
+
+
+
+
+
