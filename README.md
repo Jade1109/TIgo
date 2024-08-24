@@ -25,7 +25,9 @@ TIgo provides a comprehesnive pipline of scRNA-seq analysis, espacially for traj
 
 Input file : .h5
 
-Process: 
+Output：UMAP, .rds file
+
+#### Workflow: 
 1. quality control (‘nFeature_RNA > 200’, ‘nFeature_RNA < 2500’, and ‘percent.mt < 5’)
 2. Log normalization
 3. Identification of variable features
@@ -36,8 +38,6 @@ Process:
 8. Clustering
 9. Visulization
 10. Subset
-
-Output：UMAP, .rds file
 
 ![TIgo Object Creation and Clustering](/figures/OC.png)
 
