@@ -18,7 +18,7 @@ startTIgo()
 TIgo requires R>= 4.4.0
 
 ## About
-TIgo provides a comprehensive pipeline from scratch, compares and combines Monocle3 and Slingshot, and supplies the Trajectory information on the key interferon-stimulated gene and immune cell markers for SARS2 infection (Saelens et al., 2019, Street et al., 2018)
+TIgo provides a comprehensive pipeline from scratch, compares and combines Monocle3 and Slingshot, and supplies the Trajectory information on the key interferon-stimulated gene and immune cell markers for SARS2 infection. Moreover, the preprocess of object creation uses Seurat.v5 (Saelens et al., 2019, Street et al., 2018，Pereira et al., 2021)
 
 ![TIgo workflow](/figures/workflow.png)
 
@@ -112,6 +112,7 @@ GSE145926, which includes human bronchoalveolar lavage fluid (BALF) cells, was u
 
 
 ## Reference
+PEREIRA, W. J., ALMEIDA, F. M., CONDE, D., BALMANT, K. M., TRIOZZI, P. M., SCHMIDT, H. W., DERVINIS, C., PAPPAS, G. J. & KIRST, M. 2021. Asc-Seurat: analytical single-cell Seurat-based web application. BMC Bioinformatics, 22, 556.
 SAELENS, W., CANNOODT, R., TODOROV, H. & SAEYS, Y. 2019. A comparison of single-cell trajectory inference methods. Nature biotechnology, 37, 547-554.
 STREET, K., RISSO, D., FLETCHER, R. B., DAS, D., NGAI, J., YOSEF, N., PURDOM, E. & DUDOIT, S. 2018. Slingshot: cell lineage and pseudotime inference for single-cell transcriptomics. BMC genomics, 19, 1-16.
 LIAO, M., LIU, Y., YUAN, J., WEN, Y., XU, G., ZHAO, J., CHENG, L., LI, J., WANG, X., WANG, F., LIU, L., AMIT, I., ZHANG, S. & ZHANG, Z. 2020b. Single-cell landscape of bronchoalveolar immune cells in patients with COVID-19. Nat Med, 26, 842-844.
