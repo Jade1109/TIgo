@@ -2,7 +2,7 @@ Package: TIgo
 Title: TIgo
 Version: 0.0.0.9000
 Authors@R: 
-    person("Luanjing Hao", , , "luanjingh@163.com", role = c("aut", "cre"))
+    person("Luanjing Hao", email = "luanjingh@163.com", role = c("aut", "cre"))
 Description: A user-friendly R package for Single-cell RNA-Seq data
     trajectory inference analysis
 License: `use_mit_license()`, `use_gpl3_license()` or friends to pick a
