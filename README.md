@@ -11,7 +11,7 @@ install_github("Jade1109/TIgo")
 
 # Start the application
 library(TIgo)
-startTIgo()
+runTIgoApp()
 ```
 ### Prerequisites
 
