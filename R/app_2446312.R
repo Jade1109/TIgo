@@ -1,3 +1,37 @@
+#' User Interface for the Trajectory Analysis Module
+#'
+#' @param id The Shiny module id.
+#' @return A Shiny UI for the Trajectory Analysis Module.
+#' @export
+#' @importFrom shiny NS fluidPage sidebarLayout sidebarPanel mainPanel h4 fileInput selectInput actionButton textAreaInput numericInput
+#' @importFrom shiny uiOutput verbatimTextOutput downloadButton plotlyOutput tableOutput fluidRow div
+#' @importFrom plotly ggplotly
+#' @importFrom dplyr select
+#' @importFrom ggplot2 ggsave
+#' @importFrom tools file_ext
+#' @importFrom zip zip
+#' @importFrom SeuratObject readRDS
+#' @importFrom slingshot slingshot
+#' @importFrom harmony harmony
+#' @importFrom tibble tibble
+#' @importFrom purrr map
+#' @importFrom dynwrap dynwrap
+#' @importFrom dyro dyro
+#' @importFrom ggplot2 ggplot
+#' @importFrom plotly plot_ly
+#' @importFrom clusterProfiler enrichGO
+#' @importFrom org.Hs.eg.db org.Hs.eg.db
+#' @importFrom pheatmap pheatmap
+#' @importFrom shinyWidgets shinyWidgets
+#' @importFrom monocle3 monocle3
+#' @importFrom waiter waiter
+#' @importFrom mgcv mgcv
+#' @importFrom broom broom
+#' @importFrom dplyr dplyr
+#' @importFrom tidyr tidyr
+#' @importFrom RColorBrewer RColorBrewer
+#' @importFrom DT DT
+#'
 library(slingshot)
 library(Seurat)
 library(magrittr)
@@ -22,9 +56,9 @@ library(pheatmap)
 library(RColorBrewer)
 library(DT)
 # Source the separate app scripts
-source("seurat.R")
-source("TI.R")
-source("go.R")
+source("/Users/apple/Desktop/TIgo/R/seurat.R")
+source("/Users/apple/Desktop/TIgo/R/TI.R")
+source("/Users/apple/Desktop/TIgo/R/go.R")
 options(shiny.maxRequestSize = 1000*1024^2)
 # Combine UIs using navbarPage
 ui <- navbarPage(

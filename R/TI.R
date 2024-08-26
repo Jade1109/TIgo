@@ -1,4 +1,16 @@
-# Define the Trajectory Analysis module UI
+#' Trajectory Analysis Module UI
+#'
+#' This function defines the UI for the Trajectory Analysis module in a Shiny app.
+#'
+#' @param id A string representing the namespace ID for the module.
+#'
+#' @return A Shiny UI definition for the Trajectory Analysis module.
+#' @export
+#'
+#' @importFrom shiny NS fluidPage sidebarLayout sidebarPanel mainPanel h4 fileInput selectInput actionButton textAreaInput numericInput
+#' @importFrom shinyWidgets uiOutput verbatimTextOutput downloadButton plotlyOutput tableOutput fluidRow div
+#' @importFrom plotly ggplotly
+#'
 TIUI <- function(id) {
     ns <- NS(id)  # Create a namespace function using the module's id to ensure unique IDs in the UI
 
@@ -77,7 +89,22 @@ TIUI <- function(id) {
     )
 }
 
-
+#' Trajectory Analysis Module Server
+#'
+#' This function defines the server logic for the Trajectory Analysis module in a Shiny app.
+#'
+#' @param input,output,session Standard Shiny server function parameters.
+#'
+#' @return None. This function is used to handle reactive expressions and events in the module.
+#' @export
+#'
+#' @importFrom shiny reactiveValues observeEvent req renderUI renderText renderPlotly renderTable showNotification downloadHandler
+#' @importFrom SeuratObject readRDS
+#' @importFrom tools file_ext
+#' @importFrom zip zip
+#' @importFrom ggplot2 ggsave
+#' @importFrom dplyr select
+#'
 
 TIserver <- function(input, output, session) {
     ns <- session$ns
@@ -453,7 +480,17 @@ TIserver <- function(input, output, session) {
     })
 }
 
-
+#' Process Input Data for Trajectory Analysis
+#'
+#' This function processes the input data for trajectory analysis. It accepts either a Seurat object or raw data and extracts the gene expression matrix, cell metadata, and gene annotations.
+#'
+#' @param gene_expression A gene expression matrix (default is NULL).
+#' @param cell_metadata A data frame containing cell metadata (default is NULL).
+#' @param gene_annotation A data frame containing gene annotations (default is NULL).
+#' @param seurat_object A Seurat object containing RNA assay data (default is NULL).
+#'
+#' @return A list containing gene expression, cell metadata, and gene annotation.
+#' @export
 processInputData <- function(gene_expression = NULL, cell_metadata = NULL, gene_annotation = NULL, seurat_object = NULL) {
     if (!is.null(seurat_object)) {
         if (!inherits(seurat_object, "Seurat")) {
@@ -474,6 +511,19 @@ processInputData <- function(gene_expression = NULL, cell_metadata = NULL, gene_
     return(list(gene_expression = gene_expression, cell_metadata = cell_metadata, gene_annotation = gene_annotation))
 }
 
+#' Run Slingshot Trajectory Inference
+#'
+#' This function runs the Slingshot trajectory inference on a Seurat object. It generates pseudotime values and integrates them into the Seurat metadata.
+#'
+#' @param seurat_object_file The path to the Seurat object file.
+#' @param start_cluster The starting cluster for the trajectory.
+#' @param end_cluster The ending cluster for the trajectory.
+#' @param seurat_cluster The name of the cluster column in the Seurat object.
+#' @param color_cells A vector of colors for cells.
+#' @param session The Shiny session object.
+#'
+#' @return A list containing the Slingshot output, plot, reduced dimension data, and pseudotime values.
+#' @export
 runslingshotTrajectory <- function(seurat_object_file, start_cluster, end_cluster, seurat_cluster, color_cells, session) {
     tryCatch({
         checkpoints <- list(method_afterpreproc = as.numeric(Sys.time()))
@@ -581,6 +631,24 @@ runslingshotTrajectory <- function(seurat_object_file, start_cluster, end_cluste
     })
 }
 
+#' Run Monocle3 Trajectory Inference
+#'
+#' This function runs the Monocle3 trajectory inference on processed input data. It creates a cell data set (CDS) and performs preprocessing, dimension reduction, clustering, and graph learning.
+#'
+#' @param gene_expression A gene expression matrix.
+#' @param cell_metadata A data frame containing cell metadata.
+#' @param gene_annotation A data frame containing gene annotations.
+#' @param seurat_cluster The name of the cluster column in the Seurat object.
+#' @param start_cluster The starting cluster for the trajectory.
+#' @param label_groups_by_cluster A logical value indicating whether to label groups by cluster.
+#' @param color_cells_by The method used to color cells in the plot.
+#' @param label_branch_points_input A logical value indicating whether to label branch points.
+#' @param session The Shiny session object.
+#' @param label_leaves_input A logical value indicating whether to label leaves.
+#' @param group_input A grouping variable for alignment.
+#'
+#' @return A list containing the Monocle3 CDS object and a trajectory plot.
+#' @export
 runmonocle3Trajectory <- function(gene_expression, cell_metadata, gene_annotation, seurat_cluster, start_cluster, label_groups_by_cluster, color_cells_by, label_branch_points_input, session, label_leaves_input, group_input) {
     tryCatch({
         if (!inherits(gene_expression, "dgCMatrix")) {
@@ -662,6 +730,19 @@ runmonocle3Trajectory <- function(gene_expression, cell_metadata, gene_annotatio
     })
 }
 
+#' Run Differential Expression Analysis Using Monocle3
+#'
+#' This function performs differential expression analysis along a trajectory using Monocle3. It identifies differentially expressed genes (DEGs) and generates a heatmap and pseudotime plot.
+#'
+#' @param cds A Monocle3 cell data set (CDS) object.
+#' @param interested_genes A vector of gene names of interest.
+#' @param seurat_cluster The name of the cluster column in the Seurat object.
+#' @param start_cluster The starting cluster for the trajectory.
+#' @param q The threshold for the q-value to identify significant genes.
+#' @param session The Shiny session object.
+#'
+#' @return A list containing the aggregated expression matrix, heatmap, pseudotime plot, and DEG results.
+#' @export
 runDEGtrajectory_M <- function(cds, interested_genes, seurat_cluster, start_cluster, q, session) {
     tryCatch({
         # Perform DEG analysis
@@ -696,6 +777,17 @@ runDEGtrajectory_M <- function(cds, interested_genes, seurat_cluster, start_clus
     })
 }
 
+#' Run Differential Expression Analysis Using Slingshot
+#'
+#' This function performs differential expression analysis along a trajectory using Slingshot. It fits a GAM model for each gene and generates a heatmap of the expression patterns.
+#'
+#' @param output_slingshot The output from the Slingshot trajectory analysis.
+#' @param Tcells A Seurat object containing RNA assay data.
+#' @param q The threshold for the q-value to identify significant genes.
+#' @param session The Shiny session object.
+#'
+#' @return A list containing the DEG results, heatmap, and smooth terms.
+#' @export
 runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
     tryCatch({
         # Extract data from output_slingshot
@@ -827,7 +919,16 @@ runDEGtrajectory_S <- function(output_slingshot, Tcells, q, session) {
     })
 }
 
-
+#' Get Earliest Principal Node
+#'
+#' This function identifies the earliest principal node for ordering cells in a Monocle3 trajectory. It calculates the root principal node based on the start cluster.
+#'
+#' @param cds A Monocle3 cell data set (CDS) object.
+#' @param seurat_cluster The name of the cluster column in the Seurat object.
+#' @param start_cluster The starting cluster for the trajectory.
+#'
+#' @return The earliest principal node in the trajectory graph.
+#' @export
 get_earliest_principal_node <- function(cds, seurat_cluster, start_cluster){
     # Identify the cell IDs that belong to the start cluster
     cell_ids <- which(colData(cds)[[seurat_cluster]] == start_cluster)
