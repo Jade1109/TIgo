@@ -60,7 +60,14 @@ source("/Users/apple/Desktop/TIgo/R/seurat.R")
 source("/Users/apple/Desktop/TIgo/R/TI.R")
 source("/Users/apple/Desktop/TIgo/R/go.R")
 options(shiny.maxRequestSize = 1000*1024^2)
-# Combine UIs using navbarPage
+#' TIgo UI
+#'
+#' Creates the user interface for the TIgo Shiny app using a `navbarPage` layout. The UI consists of three tabs:
+#' - Seurat object creation
+#' - Trajectory Analysis
+#' - GO Enrichment Analysis
+#'
+#' @export
 ui <- navbarPage(
   "TIgo",
   tabPanel("Seurat object creation", umapui("umap_module")),
@@ -69,7 +76,12 @@ ui <- navbarPage(
 )
 
 
-# Combined server function
+#' TIgo Server
+#'
+#' Defines the server logic for the TIgo Shiny app. It includes server functions for each of the three modules corresponding to the tabs in the UI.
+#'
+#' @param input, output, session Standard Shiny server arguments.
+#' @export
 server <- function(input, output, session) {
   # Call module server functions for each tab
   callModule(umapserver, "umap_module")
@@ -77,6 +89,13 @@ server <- function(input, output, session) {
   callModule(goserver,"go_module")
 }
 
-# Run the combined Shiny app
-shinyApp(ui = ui, server = server)
+
+#' Run TIgo Shiny App
+#'
+#' This function runs the combined Shiny app defined by the UI and server functions.
+#'
+#' @export
+runTIgoApp <- function() {
+  shinyApp(ui = ui, server = server)
+}
 
