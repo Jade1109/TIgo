@@ -88,11 +88,7 @@ server <- function(input, output, session) {
   callModule(TIserver, "trajectory_module")
   callModule(goserver,"go_module")
 }
-<<<<<<< HEAD
-=======
 
-
->>>>>>> origin/main
 #' Run TIgo Shiny App
 #'
 #' This function runs the combined Shiny app defined by the UI and server functions.
