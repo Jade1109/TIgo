@@ -114,6 +114,7 @@ Link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145926
 
 ## Reference
 PEREIRA, W. J., ALMEIDA, F. M., CONDE, D., BALMANT, K. M., TRIOZZI, P. M., SCHMIDT, H. W., DERVINIS, C., PAPPAS, G. J. & KIRST, M. 2021. Asc-Seurat: analytical single-cell Seurat-based web application. BMC Bioinformatics, 22, 556.
+
 SAELENS, W., CANNOODT, R., TODOROV, H. & SAEYS, Y. 2019. A comparison of single-cell trajectory inference methods. Nature biotechnology, 37, 547-554.
 
 STREET, K., RISSO, D., FLETCHER, R. B., DAS, D., NGAI, J., YOSEF, N., PURDOM, E. & DUDOIT, S. 2018. Slingshot: cell lineage and pseudotime inference for single-cell transcriptomics. BMC genomics, 19, 1-16.
