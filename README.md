@@ -103,6 +103,7 @@ Output: barplot and file of GO enrichment
 
 ## Test Data
 GSE145926, which includes human bronchoalveolar lavage fluid (BALF) cells, was utilized to test the application of this package in COVID-19 studies. This dataset includes samples from 3 healthy controls, 3 patients with moderate COVID-19, and 6 patients with severe COVID-19 (Liao et al., 2020b).
+Link: https://www.ncbi.nlm.nih.gov/geo/query/acc.cgi?acc=GSE145926
 
 
 ## Built With
