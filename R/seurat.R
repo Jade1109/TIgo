@@ -15,6 +15,9 @@ umapui <- function(id) {
         fileInput(ns("h5_files"), "Choose .h5 Files", multiple = TRUE, accept = ".h5"),  # Input for selecting .h5 files
         textInput(ns("project_names"), "Enter Group Names (comma-separated)", value = ""),  # Input for project/group names
         sliderInput(ns("resolution"), "Select Clustering Resolution", min = 0, max = 2, value = 0.8, step = 0.1),  # Slider for clustering resolution
+        numericInput(ns("min_features"), "Minimum Features per Cell", value = 200, min = 0),  # Input for min features
+        numericInput(ns("max_features"), "Maximum Features per Cell", value = 2500, min = 0),  # Input for max features
+        numericInput(ns("max_percent_mt"), "Maximum Mitochondrial Percentage", value = 5, min = 0, max = 100),  # Input for max mito percentage
         actionButton(ns("process"), "Process UMAP"),  # Button to start UMAP processing
         selectInput(ns("select_clusters"), "Select Clusters to Subset", choices = NULL, multiple = TRUE),  # Select clusters for subsetting
         actionButton(ns("subset_clusters"), "Subset Clusters")  # Button to subset clusters
@@ -29,7 +32,6 @@ umapui <- function(id) {
     )
   )
 }
-
 #' Define Server Logic for the UMAP Module
 #'
 #' This function defines the server logic for the UMAP module in a Shiny app.
@@ -57,7 +59,7 @@ umapserver <- function(input, output, session) {
       project_names <- strsplit(input$project_names, ",\\s*")[[1]]
 
       # Check if the number of files matches the number of project names
-      if(length(h5_files) != length(project_names)) {
+      if (length(h5_files) != length(project_names)) {
         showNotification("Number of project names must match the number of files", type = "error")
         return(NULL)
       }
@@ -74,7 +76,14 @@ umapserver <- function(input, output, session) {
       print("Seurat Object is Created.")
 
       # Perform quality control on each Seurat object
-      seurat_objs <- lapply(seurat_objs, perform_quality_control)
+      seurat_objs <- lapply(seurat_objs, function(obj) {
+        perform_quality_control(
+          seurat_obj = obj,
+          min_features = input$min_features,
+          max_features = input$max_features,
+          max_percent_mt = input$max_percent_mt
+        )
+      })
       print("QC done")
 
       # Create a vector of cell identifiers for each Seurat object
@@ -206,6 +215,7 @@ umapserver <- function(input, output, session) {
   )
 }
 
+
 #' Add Percentage of Mitochondrial Genes
 #'
 #' Adds a new column to the Seurat object that contains the percentage of mitochondrial genes.
@@ -227,14 +237,14 @@ add_mito_percentage <- function(seurat_obj) {
 #' @param seurat_obj A Seurat object.
 #' @return The filtered Seurat object after applying quality control.
 #' @export
-perform_quality_control <- function(seurat_obj) {
+perform_quality_control <- function(seurat_obj, min_features, max_features, max_percent_mt) {
   seurat_obj <- add_mito_percentage(seurat_obj)  # Add mitochondrial percentage
 
   # Plot QC metrics before subsetting
   VlnPlot(seurat_obj, features = c("nFeature_RNA", "nCount_RNA", "percent.mt"), ncol = 3)
 
-  # Subset cells based on QC criteria
-  seurat_obj <- subset(seurat_obj, subset = nFeature_RNA > 200 & nFeature_RNA < 2500 & percent.mt < 5)
+  # Subset cells based on user-defined QC criteria
+  seurat_obj <- subset(seurat_obj, subset = nFeature_RNA > min_features & nFeature_RNA < max_features & percent.mt < max_percent_mt)
 
   return(seurat_obj)  # Return the filtered Seurat object
 }
